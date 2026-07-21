@@ -41,6 +41,26 @@ if(localStorage.getItem('nova_payments_schema_v2')!=='1'){
 }
 let settings = {...structuredCloneSafe(demoSettings), ...load(KEYS.settings, demoSettings)};
 if(!settings.storeName || settings.storeName === 'NOVA STORE') settings.storeName = 'LAURA MB';
+let storeSettingsUpdatedAt = '';
+
+function cacheBustAsset(url,stamp=''){
+  const value=String(url||'').trim();if(!value)return '';
+  if(value.startsWith('data:'))return value;
+  try{const u=new URL(value);u.searchParams.set('v',String(stamp?Date.parse(stamp)||stamp:Date.now()));return u.toString();}catch{return value;}
+}
+
+async function loadStoreSettingsFromSupabase(){
+  const select='store_name,support_email,free_shipping_min,default_shipping,favicon_url,updated_at';
+  const endpoint=`${SUPABASE_URL}/rest/v1/store_settings?id=eq.1&select=${encodeURIComponent(select)}`;
+  try{
+    const response=await fetch(endpoint,{headers:{apikey:SUPABASE_PUBLISHABLE_KEY},cache:'no-store'});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const rows=await response.json(),row=Array.isArray(rows)?rows[0]:null;if(!row)return false;
+    storeSettingsUpdatedAt=row.updated_at||'';
+    settings={...settings,storeName:row.store_name||settings.storeName||'LAURA MB',email:row.support_email||settings.email||'',freeShipping:Number(row.free_shipping_min??settings.freeShipping??299),shipping:Number(row.default_shipping??settings.shipping??19.90),favicon:row.favicon_url?cacheBustAsset(row.favicon_url,row.updated_at):''};
+    return true;
+  }catch(error){console.warn('Configurações públicas da loja indisponíveis:',error);return false;}
+}
 let currentProduct = null;
 let selectedSize = null;
 let checkoutPaymentSession = null;
@@ -174,6 +194,7 @@ async function init(){
   renderCatalogLoading();
   renderFooterPayments();
   setupMasks();
+  await loadStoreSettingsFromSupabase();
   applyThemeToStore();
   applySiteIdentity();
 
@@ -411,7 +432,12 @@ if(themePublished?.header && (!themePublished.header.logo || themePublished.head
 
 function renderFaviconPreview(){const el=document.getElementById('faviconPreview');if(!el)return;el.innerHTML=settings.favicon?`<img src="${settings.favicon}" alt="Ícone atual">`:`<span>${escapeHtml((settings.storeName||'N').trim().charAt(0).toUpperCase()||'N')}</span>`;}
 function applySiteIdentity(){
-  const fav=document.getElementById('siteFavicon');if(fav)fav.href=settings.favicon||'data:,';
+  const favicon=settings.favicon||'';
+  let fav=document.getElementById('siteFavicon');
+  if(!fav){fav=document.createElement('link');fav.id='siteFavicon';fav.rel='icon';document.head.appendChild(fav)}
+  fav.href=favicon||'data:,';
+  let shortcut=document.getElementById('siteShortcutIcon');if(!shortcut){shortcut=document.createElement('link');shortcut.id='siteShortcutIcon';shortcut.rel='shortcut icon';document.head.appendChild(shortcut)}shortcut.href=favicon||'data:,';
+  let apple=document.getElementById('siteAppleIcon');if(!apple){apple=document.createElement('link');apple.id='siteAppleIcon';apple.rel='apple-touch-icon';document.head.appendChild(apple)}apple.href=favicon||'data:,';
   document.title=`${settings.storeName||themePublished?.header?.logo||'Loja Online'} — Loja Online`;
   const checkout=document.querySelector('#checkoutModal .checkout-top .brand');if(checkout)renderBrandElement(checkout,themePublished);
 }
