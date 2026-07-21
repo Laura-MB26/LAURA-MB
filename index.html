@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111111" />
+  <link id="siteFavicon" rel="icon" href="data:," />
+  <title>NOVA STORE — Loja Online</title>
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <!-- VISÃO CLIENTE -->
+  <div id="storeApp" class="app-view active">
+    <div id="announcementBar" class="announcement">FRETE GRÁTIS ACIMA DE R$ 299 • TROCA FÁCIL • COMPRA SEGURA</div>
+
+    <header class="store-header">
+      <a class="brand" href="#" onclick="event.preventDefault(); showStoreHome()"><img class="brand-logo-image hidden" alt="Logo da loja"><span class="brand-name">NOVA STORE</span></a>
+
+      <nav class="desktop-nav">
+        <button onclick="setCategory('Todos')">Novidades</button>
+        <button onclick="setCategory('Moda')">Moda</button>
+        <button onclick="setCategory('Calçados')">Calçados</button>
+        <button onclick="setCategory('Casa')">Casa</button>
+        <button onclick="setCategory('Acessórios')">Acessórios</button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn" aria-label="Pesquisar" onclick="toggleSearch()">⌕</button>
+        <button class="icon-btn cart-icon" aria-label="Carrinho" onclick="openCart()">🛍<span id="cartCount">0</span></button>
+        <button class="admin-entry" onclick="openAdminLogin()">ADMIN</button>
+      </div>
+    </header>
+
+    <div id="searchBar" class="search-bar hidden">
+      <input id="searchInput" type="search" placeholder="Buscar produtos..." oninput="renderProducts()" />
+      <button onclick="toggleSearch()">Fechar</button>
+    </div>
+
+    <main>
+      <section id="heroSection" class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <span class="eyebrow">COLEÇÃO 2026</span>
+          <h1>Design que combina<br>com a sua rotina.</h1>
+          <p>Peças selecionadas para vestir, viver e transformar o seu dia.</p>
+          <div class="hero-actions">
+            <button class="btn btn-light" onclick="scrollToProducts()">COMPRAR AGORA</button>
+            <button class="btn btn-ghost-light" onclick="setCategory('Moda'); scrollToProducts()">VER COLEÇÃO</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="benefitsSection" class="benefits">
+        <div><strong>Compra segura</strong><span>Ambiente protegido</span></div>
+        <div><strong>Entrega para todo Brasil</strong><span>Consulte o prazo no checkout</span></div>
+        <div><strong>Troca facilitada</strong><span>Processo simples e rápido</span></div>
+      </section>
+
+      <section class="catalog-section" id="catalog">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow dark">SELEÇÃO ESPECIAL</span>
+            <h2>Descubra seus favoritos</h2>
+          </div>
+          <div class="catalog-controls">
+            <select id="categoryFilter" onchange="renderProducts()">
+              <option>Todos</option>
+              <option>Moda</option>
+              <option>Calçados</option>
+              <option>Casa</option>
+              <option>Acessórios</option>
+            </select>
+            <select id="sortFilter" onchange="renderProducts()">
+              <option value="featured">Em destaque</option>
+              <option value="low">Menor preço</option>
+              <option value="high">Maior preço</option>
+              <option value="new">Mais recentes</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="productGrid" class="product-grid"></div>
+        <div id="emptyCatalog" class="empty-state hidden">
+          <strong>Nenhum produto encontrado.</strong>
+          <span>Tente outro termo ou categoria.</span>
+        </div>
+      </section>
+
+      <section id="editorialSection" class="editorial-banner">
+        <div>
+          <span class="eyebrow">NOVA ESSÊNCIA</span>
+          <h2>Menos excesso.<br>Mais identidade.</h2>
+          <p>Uma curadoria de peças versáteis, pensadas para durar além da tendência.</p>
+          <button class="btn btn-light" onclick="setCategory('Todos'); scrollToProducts()">EXPLORAR</button>
+        </div>
+      </section>
+
+      <section id="newsletterSection" class="newsletter">
+        <span class="eyebrow dark">FIQUE POR DENTRO</span>
+        <h2>Novidades primeiro, direto para você.</h2>
+        <div class="newsletter-form">
+          <input type="email" placeholder="Seu melhor e-mail" />
+          <button onclick="showToast('Cadastro realizado com sucesso!')">CADASTRAR</button>
+        </div>
+      </section>
+    </main>
+
+    <footer id="storeFooter" class="store-footer">
+      <div class="footer-brand"><img class="brand-logo-image hidden" alt="Logo da loja"><span class="brand-name">NOVA STORE</span></div>
+      <div><strong>ATENDIMENTO</strong><a href="#">Central de ajuda</a><a href="#">Trocas e devoluções</a><a href="#">Meus pedidos</a></div>
+      <div><strong>INSTITUCIONAL</strong><a href="#">Sobre nós</a><a href="#">Política de privacidade</a><a href="#">Termos de uso</a></div>
+      <div><strong>FORMAS DE PAGAMENTO</strong><span id="footerPayments">Pix • Cartão • Boleto</span></div>
+    </footer>
+  </div>
+
+  <!-- CARRINHO -->
+  <div id="drawerBackdrop" class="drawer-backdrop" onclick="closeCart()"></div>
+  <aside id="cartDrawer" class="cart-drawer">
+    <div class="drawer-header">
+      <div><span>SEU CARRINHO</span><strong id="cartTitleCount">0 itens</strong></div>
+      <button onclick="closeCart()">✕</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div id="cartEmpty" class="cart-empty">
+      <div class="empty-bag">🛍</div>
+      <strong>Seu carrinho está vazio</strong>
+      <span>Adicione produtos para continuar.</span>
+    </div>
+    <div id="cartSummary" class="cart-summary hidden">
+      <div><span>Subtotal</span><strong id="cartSubtotal">R$ 0,00</strong></div>
+      <small>Frete e descontos calculados no checkout.</small>
+      <button class="btn btn-dark full" onclick="openCheckout()">FINALIZAR COMPRA</button>
+      <button class="text-btn" onclick="closeCart()">Continuar comprando</button>
+    </div>
+  </aside>
+
+  <!-- MODAL PRODUTO -->
+  <div id="productModal" class="modal-backdrop" onclick="modalBackdropClose(event, 'productModal')">
+    <div class="modal product-modal">
+      <button class="modal-close" onclick="closeModal('productModal')">✕</button>
+      <div class="product-modal-layout">
+        <div class="product-modal-image"><img id="modalProductImage" alt="" /></div>
+        <div class="product-modal-info">
+          <span id="modalProductCategory" class="eyebrow dark"></span>
+          <h2 id="modalProductName"></h2>
+          <div id="modalProductPrice" class="product-modal-price"></div>
+          <p id="modalProductDescription"></p>
+          <div class="option-group">
+            <label>Tamanho</label>
+            <div id="modalSizes" class="size-options"></div>
+          </div>
+          <div class="stock-line"><span class="stock-dot"></span><span id="modalStock"></span></div>
+          <button id="modalAddButton" class="btn btn-dark full">ADICIONAR AO CARRINHO</button>
+          <div class="product-guarantees">
+            <span>✓ Pagamento seguro</span><span>✓ Troca facilitada</span><span>✓ Envio rastreável</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKOUT -->
+  <div id="checkoutModal" class="modal-backdrop checkout-backdrop">
+    <div class="checkout-shell">
+      <div class="checkout-top">
+        <div class="brand"><img class="brand-logo-image hidden" alt="Logo da loja"><span class="brand-name">NOVA STORE</span></div>
+        <button onclick="closeModal('checkoutModal')">✕</button>
+      </div>
+      <div class="checkout-grid">
+        <div class="checkout-form">
+          <div class="checkout-step">
+            <span class="step-number">1</span>
+            <div class="step-content">
+              <h3>Contato</h3>
+              <div class="field-grid">
+                <label class="wide">E-mail<input id="checkoutEmail" type="email" placeholder="cliente@email.com"></label>
+              </div>
+            </div>
+          </div>
+          <div class="checkout-step">
+            <span class="step-number">2</span>
+            <div class="step-content">
+              <h3>Entrega</h3>
+              <div class="field-grid">
+                <label class="wide">Nome completo<input id="checkoutName" placeholder="Nome e sobrenome"></label>
+                <label>CPF<input id="checkoutCpf" placeholder="000.000.000-00" maxlength="14"></label>
+                <label>Telefone<input id="checkoutPhone" placeholder="(67) 99999-9999"></label>
+                <label>CEP<input id="checkoutCep" placeholder="00000-000" maxlength="9"></label>
+                <label>Estado<select id="checkoutState"><option>MS</option><option>SP</option><option>RJ</option><option>MG</option><option>PR</option><option>SC</option><option>RS</option><option>GO</option><option>DF</option><option>MT</option></select></label>
+                <label class="wide">Endereço<input id="checkoutAddress" placeholder="Rua, avenida..."></label>
+                <label>Número<input id="checkoutNumber" placeholder="123"></label>
+                <label>Complemento<input id="checkoutComplement" placeholder="Apto, bloco..."></label>
+                <label class="wide">Cidade<input id="checkoutCity" placeholder="Cidade"></label>
+              </div>
+            </div>
+          </div>
+          <div class="checkout-step">
+            <span class="step-number">3</span>
+            <div class="step-content">
+              <h3>Pagamento</h3>
+              <div id="paymentOptions" class="payment-options"></div>
+              <div id="paymentDetailsPanel" class="payment-details-panel hidden"></div>
+            </div>
+          </div>
+          <button class="btn btn-dark full checkout-submit" onclick="placeOrder()">FINALIZAR PEDIDO</button>
+        </div>
+        <aside class="checkout-summary">
+          <h3>Resumo do pedido</h3>
+          <div id="checkoutItems"></div>
+          <div class="coupon-row"><input placeholder="Cupom de desconto"><button onclick="showToast('Cupom demonstrativo: configure regras no backend.')">APLICAR</button></div>
+          <div class="summary-lines">
+            <div><span>Subtotal</span><span id="checkoutSubtotal"></span></div>
+            <div><span>Frete</span><span id="checkoutShipping"></span></div>
+            <div class="total"><strong>Total</strong><strong id="checkoutTotal"></strong></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCESSO PEDIDO -->
+  <div id="successModal" class="modal-backdrop">
+    <div class="modal success-modal payment-success-modal">
+      <div class="success-icon">✓</div>
+      <span id="successEyebrow" class="eyebrow dark">PEDIDO REGISTRADO</span>
+      <h2 id="successTitle">Pedido registrado com sucesso!</h2>
+      <p id="successMessage">Seu pedido <strong id="successOrderNumber"></strong> foi registrado.</p>
+      <div id="successPaymentDetails" class="success-payment-details hidden"></div>
+      <button class="btn btn-dark" onclick="closeModal('successModal')">CONTINUAR COMPRANDO</button>
+    </div>
+  </div>
+
+  <!-- LOGIN ADMIN -->
+  <div id="adminLoginModal" class="modal-backdrop" onclick="modalBackdropClose(event, 'adminLoginModal')">
+    <div class="modal admin-login-modal">
+      <button class="modal-close" onclick="closeModal('adminLoginModal')">✕</button>
+      <div class="admin-login-mark">N</div>
+      <span class="eyebrow dark">ÁREA RESTRITA</span>
+      <h2>Painel do Desenvolvedor</h2>
+      <p>Entre para gerenciar produtos, pedidos e pagamentos.</p>
+      <label>Senha de acesso<input id="adminPassword" type="password" placeholder="Digite a senha" onkeydown="if(event.key==='Enter') adminLogin()"></label>
+      <button class="btn btn-dark full" onclick="adminLogin()">ENTRAR</button>
+      <small>Senha inicial deste protótipo: <strong>admin123</strong></small>
+    </div>
+  </div>
+
+  <!-- VISÃO DESENVOLVEDOR / ADMIN -->
+  <div id="adminApp" class="app-view admin-app">
+    <aside class="admin-sidebar">
+      <div class="admin-logo">N<span>STORE</span></div>
+      <nav>
+        <button class="admin-nav active" data-section="dashboard" onclick="showAdminSection('dashboard', this)"><span>◫</span> Visão geral</button>
+        <button class="admin-nav" data-section="editor" onclick="showAdminSection('editor', this)"><span>✦</span> Editor da loja</button>
+        <button class="admin-nav" data-section="products" onclick="showAdminSection('products', this)"><span>□</span> Produtos</button>
+        <button class="admin-nav" data-section="orders" onclick="showAdminSection('orders', this)"><span>≡</span> Pedidos</button>
+        <button class="admin-nav" data-section="payments" onclick="showAdminSection('payments', this)"><span>◇</span> Pagamentos</button>
+        <button class="admin-nav" data-section="settings" onclick="showAdminSection('settings', this)"><span>⚙</span> Configurações</button>
+      </nav>
+      <div class="admin-sidebar-bottom">
+        <button onclick="exitAdmin()">← Ver loja</button>
+        <div class="admin-user"><div>AD</div><span><strong>Administrador</strong><small>Desenvolvedor</small></span></div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div>
+          <button class="mobile-menu-btn" onclick="document.querySelector('.admin-sidebar').classList.toggle('open')">☰</button>
+          <span id="adminPageEyebrow">PAINEL</span>
+          <h1 id="adminPageTitle">Visão geral</h1>
+        </div>
+        <div class="admin-top-actions">
+          <button class="outline-admin-btn" onclick="exportStoreData()">Exportar dados</button>
+          <button class="primary-admin-btn" onclick="openProductEditor()">+ Novo produto</button>
+        </div>
+      </header>
+
+      <section id="admin-dashboard" class="admin-section active">
+        <div class="metric-grid">
+          <div class="metric-card"><span>VENDAS TOTAIS</span><strong id="metricSales">R$ 0,00</strong><small>Pedidos registrados neste navegador</small></div>
+          <div class="metric-card"><span>PEDIDOS</span><strong id="metricOrders">0</strong><small id="metricPending">0 aguardando processamento</small></div>
+          <div class="metric-card"><span>PRODUTOS ATIVOS</span><strong id="metricProducts">0</strong><small id="metricStock">0 unidades em estoque</small></div>
+          <div class="metric-card"><span>TICKET MÉDIO</span><strong id="metricTicket">R$ 0,00</strong><small>Média por pedido</small></div>
+        </div>
+
+        <div class="admin-two-col">
+          <div class="panel">
+            <div class="panel-header"><div><span>DESEMPENHO</span><h3>Resumo da loja</h3></div></div>
+            <div class="performance-bars" id="performanceBars"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div><span>ESTOQUE</span><h3>Atenção necessária</h3></div><button onclick="showAdminSection('products', document.querySelector('[data-section=products]'))">Ver produtos</button></div>
+            <div id="lowStockList" class="low-stock-list"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><div><span>ATIVIDADE RECENTE</span><h3>Últimos pedidos</h3></div><button onclick="showAdminSection('orders', document.querySelector('[data-section=orders]'))">Ver todos</button></div>
+          <div id="recentOrders" class="admin-table-wrap"></div>
+        </div>
+      </section>
+
+      <section id="admin-editor" class="admin-section editor-admin-section">
+        <div class="visual-editor-shell">
+          <aside class="visual-editor-left">
+            <div class="visual-editor-panel-title">
+              <span>ESTRUTURA</span>
+              <strong>Página inicial</strong>
+            </div>
+            <button class="theme-settings-button" onclick="selectEditorSection('global')"><span>◉</span><div><strong>Design global</strong><small>Cores, tipografia e botões</small></div><b>›</b></button>
+            <div class="editor-list-label">SEÇÕES DA PÁGINA</div>
+            <div id="editorSectionList" class="editor-section-list"></div>
+            <button class="add-section-button" onclick="showHiddenSectionsMenu()">＋ Adicionar / reativar seção</button>
+            <div id="hiddenSectionsMenu" class="hidden-sections-menu hidden"></div>
+            <div class="editor-help-card">
+              <strong>Como editar</strong>
+              <span>Clique em uma seção na lista ou diretamente no preview. Arraste os itens para reorganizar a página.</span>
+            </div>
+          </aside>
+
+          <div class="visual-editor-canvas">
+            <div class="visual-editor-toolbar">
+              <div class="editor-history-actions">
+                <button id="undoEditorBtn" onclick="editorUndo()" title="Desfazer">↶</button>
+                <button id="redoEditorBtn" onclick="editorRedo()" title="Refazer">↷</button>
+              </div>
+              <div class="device-switcher" aria-label="Modo de visualização">
+                <button class="active" data-device="desktop" onclick="setPreviewDevice('desktop',this)" title="Computador" aria-label="Computador">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="1.5"></rect><path d="M8 20h8M12 16v4"></path></svg><span>Computador</span>
+                </button>
+                <button data-device="tablet" onclick="setPreviewDevice('tablet',this)" title="Tablet" aria-label="Tablet">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2"></rect><path d="M10 18.5h4"></path></svg><span>Tablet</span>
+                </button>
+                <button data-device="mobile" onclick="setPreviewDevice('mobile',this)" title="Celular" aria-label="Celular">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M10.5 18.5h3"></path></svg><span>Celular</span>
+                </button>
+              </div>
+              <div class="editor-publish-actions">
+                <span id="editorSaveState">Alterações salvas como rascunho</span>
+                <button class="outline-admin-btn" onclick="resetEditorDraft()">Descartar</button>
+                <button class="primary-admin-btn" onclick="publishTheme()">Publicar alterações</button>
+              </div>
+            </div>
+            <div id="previewStage" class="preview-stage desktop">
+              <iframe id="storePreviewFrame" title="Pré-visualização da loja"></iframe>
+            </div>
+          </div>
+
+          <aside class="visual-editor-inspector">
+            <div id="editorInspector"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="admin-products" class="admin-section">
+        <div class="section-toolbar">
+          <div class="admin-search"><span>⌕</span><input id="adminProductSearch" placeholder="Buscar por nome, SKU ou categoria" oninput="renderAdminProducts()"></div>
+          <select id="adminCategoryFilter" onchange="renderAdminProducts()"><option>Todos</option><option>Moda</option><option>Calçados</option><option>Casa</option><option>Acessórios</option></select>
+        </div>
+        <div class="panel no-pad"><div id="adminProductsTable" class="admin-table-wrap"></div></div>
+      </section>
+
+      <section id="admin-orders" class="admin-section">
+        <div class="section-toolbar">
+          <div class="admin-search"><span>⌕</span><input id="adminOrderSearch" placeholder="Buscar pedido ou cliente" oninput="renderOrders()"></div>
+          <select id="orderStatusFilter" onchange="renderOrders()"><option>Todos</option><option>Recebido</option><option>Em preparação</option><option>Enviado</option><option>Concluído</option><option>Cancelado</option></select>
+        </div>
+        <div class="panel no-pad"><div id="ordersTable" class="admin-table-wrap"></div></div>
+      </section>
+
+      <section id="admin-payments" class="admin-section">
+        <div class="settings-heading">
+          <div><span class="eyebrow dark">CHECKOUT</span><h2>Formas de pagamento</h2><p>Ative, desative, adicione ou remova as opções exibidas ao cliente.</p></div>
+          <button class="primary-admin-btn" onclick="openPaymentEditor()">+ Adicionar forma</button>
+        </div>
+        <div id="paymentsAdminList" class="payment-admin-list"></div>
+      </section>
+
+      <section id="admin-settings" class="admin-section">
+        <div class="settings-heading"><div><span class="eyebrow dark">CONFIGURAÇÕES</span><h2>Dados da loja</h2><p>Personalize informações básicas e a identidade do site.</p></div></div>
+        <div class="panel settings-panel branding-settings-panel">
+          <div class="branding-settings-header">
+            <div><span class="eyebrow dark">IDENTIDADE DO SITE</span><h3>Ícone da aba do navegador</h3><p>Envie uma imagem quadrada para usar como favicon do site.</p></div>
+            <div id="faviconPreview" class="favicon-preview"><span>N</span></div>
+          </div>
+          <div class="brand-upload-row">
+            <label class="brand-upload-button">Escolher ícone<input id="settingFaviconFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon" onchange="handleFaviconUpload(this)"></label>
+            <button class="outline-admin-btn" type="button" onclick="removeFavicon()">Remover ícone</button>
+            <small>Após escolher, você poderá recortar, ampliar, reposicionar e arredondar antes de aplicar.</small>
+          </div>
+        </div>
+        <div class="panel settings-panel">
+          <div class="field-grid">
+            <label>Nome da loja<input id="settingStoreName"></label>
+            <label>Frete grátis a partir de<input id="settingFreeShipping" type="number" step="0.01"></label>
+            <label>Valor do frete padrão<input id="settingShipping" type="number" step="0.01"></label>
+            <label>E-mail de atendimento<input id="settingEmail" type="email"></label>
+          </div>
+          <button class="primary-admin-btn" onclick="saveSettings()">Salvar configurações</button>
+        </div>
+        <div class="danger-zone">
+          <div><strong>Restaurar dados demonstrativos</strong><span>Apaga alterações locais e restaura os produtos iniciais.</span></div>
+          <button onclick="resetDemoData()">Restaurar</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- EDITOR PRODUTO -->
+  <div id="productEditorModal" class="modal-backdrop">
+    <div class="modal editor-modal">
+      <div class="editor-header"><div><span class="eyebrow dark">CATÁLOGO</span><h2 id="productEditorTitle">Novo produto</h2></div><button onclick="closeModal('productEditorModal')">✕</button></div>
+      <input id="editProductId" type="hidden">
+      <div class="field-grid">
+        <label class="wide">Nome do produto<input id="editName" placeholder="Ex.: Camiseta Essential"></label>
+        <label>Categoria<select id="editCategory"><option>Moda</option><option>Calçados</option><option>Casa</option><option>Acessórios</option></select></label>
+        <label>SKU<input id="editSku" placeholder="MOD-001"></label>
+        <label>Preço<input id="editPrice" type="number" step="0.01" placeholder="199.90"></label>
+        <label>Preço anterior (opcional)<input id="editOldPrice" type="number" step="0.01"></label>
+        <label>Estoque<input id="editStock" type="number" min="0"></label>
+        <label>Tamanhos<input id="editSizes" placeholder="P, M, G ou Único"></label>
+        <label class="wide">URL da imagem<input id="editImage" placeholder="https://..."></label>
+        <label class="wide">Descrição<textarea id="editDescription" rows="4" placeholder="Descrição do produto"></textarea></label>
+        <label class="switch-label wide"><span><strong>Produto ativo</strong><small>Exibir este item na loja</small></span><input id="editActive" type="checkbox" checked><i></i></label>
+      </div>
+      <div class="editor-actions"><button class="outline-admin-btn" onclick="closeModal('productEditorModal')">Cancelar</button><button class="primary-admin-btn" onclick="saveProduct()">Salvar produto</button></div>
+    </div>
+  </div>
+
+  <!-- EDITOR PAGAMENTO -->
+  <div id="paymentEditorModal" class="modal-backdrop">
+    <div class="modal editor-modal payment-editor-modal">
+      <div class="editor-header"><div><span class="eyebrow dark">CHECKOUT</span><h2 id="paymentEditorTitle">Adicionar pagamento</h2></div><button onclick="closeModal('paymentEditorModal')">✕</button></div>
+      <input id="paymentEditId" type="hidden">
+      <div class="field-grid">
+        <label class="wide">Nome<input id="paymentName" placeholder="Ex.: Pix"></label>
+        <label class="wide">Descrição<input id="paymentDescription" placeholder="Ex.: Aprovação imediata"></label>
+        <label>Ícone/sigla<input id="paymentIcon" placeholder="PIX"></label>
+        <label>Tipo<select id="paymentType" onchange="renderPaymentTypeFields()"><option value="pix">Pix</option><option value="credit">Cartão de crédito</option><option value="debit">Cartão de débito</option><option value="invoice">Boleto/Fatura</option><option value="other">Outro</option></select></label>
+      </div>
+      <div id="paymentTypeFields" class="payment-type-fields"></div>
+      <div class="payment-security-note"><strong>Segurança de pagamentos</strong><span>Chaves privadas e tokens secretos de gateways nunca devem ser salvos neste HTML. Para cartões reais, conecte um gateway/backend seguro.</span></div>
+      <div class="editor-actions"><button class="outline-admin-btn" onclick="closeModal('paymentEditorModal')">Cancelar</button><button id="paymentSaveButton" class="primary-admin-btn" onclick="savePayment()">Salvar</button></div>
+    </div>
+  </div>
+
+  <!-- EDITOR DE IMAGEM: LOGO / FAVICON -->
+  <div id="imageAdjustModal" class="modal-backdrop image-adjust-backdrop">
+    <div class="modal image-adjust-modal">
+      <div class="image-adjust-header">
+        <div><span class="eyebrow dark">AJUSTAR IMAGEM</span><h2 id="imageAdjustTitle">Editar imagem</h2><p id="imageAdjustSubtitle">Ajuste o enquadramento antes de aplicar.</p></div>
+        <button type="button" onclick="closeImageAdjustEditor()">✕</button>
+      </div>
+      <div class="image-adjust-layout">
+        <div class="image-adjust-preview-column">
+          <div class="image-adjust-checker">
+            <canvas id="imageAdjustCanvas" width="900" height="360"></canvas>
+          </div>
+          <div id="imageAdjustAspectOptions" class="image-adjust-aspects">
+            <button type="button" data-aspect="original" class="active" onclick="setImageAdjustAspect('original',this)">Original</button>
+            <button type="button" data-aspect="square" onclick="setImageAdjustAspect('square',this)">1:1</button>
+            <button type="button" data-aspect="wide" onclick="setImageAdjustAspect('wide',this)">Horizontal</button>
+          </div>
+          <small>Arraste a imagem diretamente na prévia para reposicionar.</small>
+        </div>
+        <div class="image-adjust-controls">
+          <label class="image-adjust-control"><span><strong>Zoom</strong><b id="imageAdjustZoomValue">100%</b></span><input id="imageAdjustZoom" type="range" min="100" max="300" value="100" step="1" oninput="updateImageAdjustFromControls()"></label>
+          <label class="image-adjust-control"><span><strong>Posição horizontal</strong><b id="imageAdjustXValue">0</b></span><input id="imageAdjustX" type="range" min="-100" max="100" value="0" step="1" oninput="updateImageAdjustFromControls()"></label>
+          <label class="image-adjust-control"><span><strong>Posição vertical</strong><b id="imageAdjustYValue">0</b></span><input id="imageAdjustY" type="range" min="-100" max="100" value="0" step="1" oninput="updateImageAdjustFromControls()"></label>
+          <label class="image-adjust-control"><span><strong>Arredondamento</strong><b id="imageAdjustRadiusValue">0%</b></span><input id="imageAdjustRadius" type="range" min="0" max="50" value="0" step="1" oninput="updateImageAdjustFromControls()"></label>
+          <label id="imageAdjustDisplaySizeControl" class="image-adjust-control"><span><strong>Tamanho da logo no site</strong><b id="imageAdjustDisplaySizeValue">38 px</b></span><input id="imageAdjustDisplaySize" type="range" min="20" max="100" value="38" step="1" oninput="updateImageAdjustFromControls()"></label>
+          <div class="image-adjust-presets">
+            <button type="button" onclick="setImageAdjustRadius(0)">Sem arredondar</button>
+            <button type="button" onclick="setImageAdjustRadius(12)">Cantos suaves</button>
+            <button type="button" onclick="setImageAdjustRadius(50)">Circular / máximo</button>
+          </div>
+          <div class="image-adjust-actions">
+            <button class="outline-admin-btn" type="button" onclick="resetImageAdjustEditor()">Redefinir</button>
+            <button class="outline-admin-btn" type="button" onclick="closeImageAdjustEditor()">Cancelar</button>
+            <button id="imageAdjustApplyButton" class="primary-admin-btn" type="button" onclick="applyImageAdjustEditor()">Aplicar imagem</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
